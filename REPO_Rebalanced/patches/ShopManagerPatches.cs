@@ -44,6 +44,9 @@ public static class ChangeShopProportiesPatch
         foreach (var key in keys)
         {
             var item = StatsManager.instance.itemDictionary[key];
+            
+            if (item.itemType is not (SemiFunc.itemType.gun or SemiFunc.itemType.melee or SemiFunc.itemType.drone))
+                continue;
     
             item.maxAmount = Plugin.Config.Bind($"Shop Item {item.name}", "Max amount", item.maxAmount).Value;
             item.maxPurchase = Plugin.Config.Bind($"Shop Item {item.name}", "Max Purchase", item.maxPurchase).Value;
