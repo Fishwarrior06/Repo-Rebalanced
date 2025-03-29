@@ -1,65 +1,34 @@
-﻿using BepInEx;
-using BepInEx.Logging;
-using BepInEx.Configuration;
-using HarmonyLib;
 using System.Reflection;
-using System.IO;
+using BepInEx;
+using BepInEx.Configuration;
+using BepInEx.Logging;
+using HarmonyLib;
 using UnityEngine;
 
-namespace REPO_Rebalanced
+namespace REPO_Rebalanced;
+
+[BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
+public class Plugin : BaseUnityPlugin
 {
-    [BepInPlugin("com.fishyorch.rebalanced", "REPO Rebalanced", "0.0.2")]
-    public class Plugin : BaseUnityPlugin
+    internal new static ManualLogSource Logger;
+    
+    internal new static ConfigFile Config;
+    
+    public static string BuildGUID => Assembly.GetExecutingAssembly().ManifestModule.ModuleVersionId.ToString();
+
+    private void Awake()
     {
-        internal static new ManualLogSource Logger;
-        internal new static ConfigFile Config;
-
-        private static readonly (string name, float defaultValue)[] ItemSpawnSettings =
-        {
-            ("Item Drone Battery", 0.3f),
-            ("Item Drone Feather", 0.3f),
-            ("Item Drone Indestructible", 0.3f),
-            ("Item Drone Torque", 0.3f),
-            ("Item Drone Zero Gravity", 0.5f),
-            ("Item Extraction Tracker", 0.5f),
-            ("Item Gun Handgun", 0.6f),
-            ("Item Gun Shotgun", 0.3f),
-            ("Item Gun Tranq", 0.5f),
-            ("Item Melee Baseball Bat", 0.7f),
-            ("Item Melee Frying Pan", 0.6f),
-            ("Item Melee Sledge Hammer", 0.5f),
-            ("Item Melee Sword", 0.5f)
-        };
-
-        public static System.Collections.Generic.List<ItemSpawnInfo> ItemSpawnInfos = new System.Collections.Generic.List<ItemSpawnInfo>();
-
-        private void Awake()
-        {
-            Logger = base.Logger;
-            Logger.LogInfo($"Plugin REPO Rebalanced is loaded!");
-
-            Config = new ConfigFile(Path.Combine(Paths.ConfigPath, "REPO_Rebalanced.cfg"), true);
-
-            foreach (var setting in ItemSpawnSettings)
-            {
-                var configEntry = Config.Bind("ItemSpawnProbabilities", setting.name, setting.defaultValue, $"Probabilidad de aparición para {setting.name}");
-                ItemSpawnInfos.Add(new ItemSpawnInfo(setting.name, configEntry.Value));
-            }
-
-            Harmony harmony = new Harmony("com.fishyorch.rebalanced");
-            harmony.PatchAll(Assembly.GetExecutingAssembly());
-        }
+        Logger = base.Logger;
+        Logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded!");
+        
+        Config = new ConfigFile("Bepinex/config/REPO_Rebalanced.cfg", true);
+        
+        new Harmony("patch.repo_rebalanced").PatchAll();
     }
-
-    public class ItemSpawnInfo
+    
+    private void OnGUI()
     {
-        public string ItemName { get; set; }
-        public float SpawnChance { get; set; }
-
-        public ItemSpawnInfo(string itemName, float spawnChance)
-        {
-            ItemName = itemName;
-            SpawnChance = spawnChance;
-        }
+        // Remove when releasing the mod
+        GUI.Label(new Rect(10, Screen.height - 20, 400, 40), $"Rebalanced ID: {BuildGUID}");
     }
 }
